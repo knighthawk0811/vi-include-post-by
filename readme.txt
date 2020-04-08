@@ -11,7 +11,7 @@ Shortcodes allowing you to display any post basically anywhere... hopefully anyw
 
 == Description ==
 
-Version 8 Plugin: Include Post By - provides your pages and posts with shortcodes allowing you to display other pages and posts inside them either by their ID or by category.
+VI: Include Post By - provides your pages and posts with shortcodes allowing you to display other pages and posts inside them either by their ID or by category.
 
 
 == Changelog ==
