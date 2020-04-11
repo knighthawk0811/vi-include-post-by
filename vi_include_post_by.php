@@ -41,7 +41,7 @@ class vi_include_post_by
         cat="123"
         order="DESC"
         orderby="date"
-        pageinate=true
+        paginate=true
         perpage="5"
         offset="0"
 	    display="title,meta,thumbnail,content,excerpt,more,footer,all"
@@ -53,7 +53,7 @@ class vi_include_post_by
 	    cat = category to be shown
 	    order = sort order
 	    orderby = what to sort by
-	    pageinate = true/false
+	    paginate = true/false
 	    perpage = items per page. -1 = all
 	    offset = how many posts to skip, useful if you are combining multiple includes
 	    display = from include-post-by-id
@@ -521,6 +521,7 @@ class vi_include_post_by
 	    	'order' => 'DESC',
 	    	'orderby' => 'date',
 	    	'pageinate' => true,
+	    	'paginate' => true,
 	    	'perpage' => 5,
 	    	'offset' => 0,
 	    	'display' => 'all',
@@ -535,9 +536,10 @@ class vi_include_post_by
 
 	    if ( !is_null( $cat ) && ( is_numeric( $cat ) || preg_match( '/^[0-9,]+$/', $cat ) ) && !is_feed() )
 	    {
-	        //pageinate
-	        if ( $pageinate === 'false' ) $pageinate = false; // just to be sure...
-	        $pageinate = (bool) $pageinate;
+	        //paginate
+	        if ( $paginate === 'false' ) $paginate = false; // just to be sure...
+	        if ( $pageinate === 'false' ) $paginate = false; // used to be spelled wrong in an old version
+	        $paginate = (bool) $paginate;
 
 	        //perpage
 	        if ( !is_null( $perpage ) && is_numeric( $perpage ) )
@@ -639,8 +641,8 @@ class vi_include_post_by
 	            }
 
 
-				//pageination
-	            if( $pageinate )
+				//pagination
+	            if( $paginate )
 	            {
 	            	$output .= '<div class="paginate-container">';
 
@@ -726,7 +728,7 @@ class vi_include_post_by
 	                    }
 	                    $output .= '</div>';//page-number
 	                }
-	                $output .= '</div>';//pageinate-container
+	                $output .= '</div>';//paginate-container
 	            }
 	        }
 	        $output .= '</div>';//close the category div tag
