@@ -1,13 +1,13 @@
-# === VI: Include Post By ===
-Contributors: Knighthawk
-Tags: shortcode, vars, options, post, params, 
-Requires at least: 4.0
-Requires PHP: 5.2.4
-Tested up to: 5.4
-Version: 0.4.200411
-Stable tag: trunk
-License: GPLv2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+# === VI: Include Post By ===  
+Contributors: Knighthawk  
+Tags: shortcode, vars, options, post, params,   
+Requires at least: 4.0  
+Requires PHP: 5.2.4  
+Tested up to: 5.4  
+Version: 0.4.200411  
+Stable tag: trunk  
+License: GPLv2  
+License URI: http://www.gnu.org/licenses/gpl-2.0.html  
 
 Shortcodes allowing you to display posts inside other posts/pages
 
