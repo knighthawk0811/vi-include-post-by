@@ -2,8 +2,8 @@
 /*
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
-Description: A collection of shortcodes to include posts inside other posts, etc
-Version: 0.4.200403
+Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
+Version: 0.4.200411
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later
@@ -55,7 +55,7 @@ class vi_include_post_by
 	    orderby = what to sort by
 	    pageinate = true/false
 	    perpage = items per page. -1 = all
-	    offset = how many to skip, useful if you are combining multiple of these
+	    offset = how many posts to skip, useful if you are combining multiple includes
 	    display = from include-post-by-id
 	    class= custom-class-name used in the internal element
 	    container= custom-class-name used in the wrapper element
@@ -564,22 +564,20 @@ class vi_include_post_by
 	            $orderby = 'date';
 	        }
 
-	        //offest
+	        //offest + offset_by_page
 	        $page_current = 1;
-	        $offset = 0;
+	        $offset = intval($offset);
+	        $offset_by_page = 0;
 	        if( isset( $_GET['pn'] ) && is_numeric( $_GET['pn'] ) )
 	        {
 	            $page_current = intval( $_GET['pn'] );
-	            $offset = ( $page_current - 1 ) * $perpage;
-	            if( $offset < 0 )
+	            $offset_by_page = ( $page_current - 1 ) * $perpage;
+	            if( $offset_by_page < 0 )
 	            {
-	                $offset = 0;
+	                $offset_by_page = 0;
 	            }
 	        }
-	        else
-	        {
-	            $page_current = 1;
-	        }
+	        $offset += $offset_by_page;
 
 	    	$class = sanitize_text_field( $class );
 	    	$class = get_category( $cat )->slug . ' ' . $class;
@@ -589,7 +587,7 @@ class vi_include_post_by
 
 	        //count all posts
 	        $post_count = 0;
-	        $transient_name = 'v8_' . md5( $intput_string ) . '_c';
+	        $transient_name = 'vi_' . md5( $intput_string ) . '_c';
 	        if( false === ( $post_count = get_transient( $transient_name ) ) )
 	        {
 	            // It wasn't there, so regenerate the data and save the transient
@@ -606,7 +604,7 @@ class vi_include_post_by
 	            set_transient( $transient_name, $post_count, 10 * MINUTE_IN_SECONDS );
 	        }
 	        //get content for just the current page of posts
-	        $transient_name = 'v8_' . md5( $intput_string ) . '_' . $page_current;
+	        $transient_name = 'vi_' . md5( $intput_string ) . '_' . $page_current;
 	        if( false === ( $post_array = get_transient( $transient_name ) ) )
 	        {
 	            // It wasn't there, so regenerate the data and save the transient
