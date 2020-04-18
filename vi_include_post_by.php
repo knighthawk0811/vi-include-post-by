@@ -66,6 +66,7 @@ class vi_include_post_by
     /*--------------------------------------------------------------
     # TODO
     --------------------------------------------------------------*/
+
     //all:  put pageination style into CSS classes
 
     //include_by_cat
@@ -82,59 +83,27 @@ class vi_include_post_by
 	/**
 	 * return the thumbnail URL as a string
 	 *
-	 * @version 0.3.191125
+	 * @version 0.3.200415
 	 * @since 0.1.181213
 	 * @todo custom ID is not returning the post properly for some reason.
 	 *		result is going to the current page/post after returning.
 	 *		following procedures then have the wrong post data
 	 */
-	private static function get_thumbnail_url($id = null)
+	private static function get_thumbnail_url($input_post = null)
 	{
 		//return value
 		$the_post_thumbnail_url = '';
 
-		if(true || $id == null)//always do this until it gets fixed
+		if($input_post == null)
 		{
-			// no new loop
-			global $post;
-
-			//is this a proper post type?
-			if( 'post' === get_post_type($post) || 'page' === get_post_type($post) )
-			{
-				//already have a thumbnail? use that one
-				if(has_post_thumbnail($id))
-				{
-					ob_start();
-					the_post_thumbnail_url('full');
-					$the_post_thumbnail_url = ob_get_contents();
-					ob_end_clean();
-				}
-				else
-				{
-					//no thumbnail set, then grab the first image
-					ob_start();
-					ob_end_clean();
-					$matches = array();
-					$output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $post->post_content, $matches);
-					if( isset($matches[1][0]) )
-					{
-						$the_post_thumbnail_url = $matches[1][0];
-					}
-
-					//set a default image inside the theme folder
-					if(empty($the_post_thumbnail_url))
-					{
-						$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
-					}
-				}
-			}
-
+			//fail gracefully
 		}
-		else
+		elseif( is_int($input_post) )
 		{
+			//need to lookup post
 
 			//new loop
-			$query2 = new WP_Query( array( 'p' => $id ) );
+			$query2 = new WP_Query( array( 'p' => $input_post ) );
 			if ( $query2->have_posts() )
 			{
 				// The 2nd Loop
@@ -174,6 +143,36 @@ class vi_include_post_by
 				wp_reset_postdata();
 			}
 		}
+		elseif( is_object($input_post) )
+		{
+			//is this a proper post type?
+			if( 'post' === get_post_type($query2->post) || 'page' === get_post_type($query2->post) )
+			{
+				//already have a thumbnail? use that one
+				if(has_post_thumbnail($query2->post->ID))
+				{
+					ob_start();
+					the_post_thumbnail_url('full');
+					$the_post_thumbnail_url = ob_get_contents();
+					ob_end_clean();
+				}
+				else
+				{
+					//no thumbnail set, then grab the first image
+					ob_start();
+					ob_end_clean();
+					$matches = array();
+					$output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $query2->post->post_content, $matches);
+					$the_post_thumbnail_url = $matches[1][0];
+
+					//set a default image inside the theme folder
+					if(empty($the_post_thumbnail_url))
+					{
+						$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
+					}
+				}
+			}
+		}
 
 		return $the_post_thumbnail_url;
 	}
@@ -181,33 +180,33 @@ class vi_include_post_by
 	/**
 	 * return the thumbnail <img> as a string
 	 *
-	 * @version 0.1.181213
+	 * @version 0.1.200415
 	 * @since 0.1.181213
 	 */
-	private static function get_thumbnail_tag($id = null, $class = '')
+	private static function get_thumbnail_tag($post = null, $class = '')
 	{
 		//return string <img> value
-		return '<img src="' . vi_include_post_by::get_thumbnail_url($id) .'" class=" ' . $class . ' attachment-thumbnail size-thumbnail wp-post-image" alt="" />';
+		return '<img src="' . vi_include_post_by::get_thumbnail_url($post) .'" class=" ' . $class . ' attachment-thumbnail size-thumbnail wp-post-image" alt="" />';
 	}
 
 	/**
 	 * return the full thumbnail content
 	 *
-	 * @version 0.3.191007
+	 * @version 0.3.200415
 	 * @since 0.3.191007
 	 */
-	private static function get_thumbnail($id = NULL, $link = true, $class = '')
+	private static function get_thumbnail($post = NULL, $link = true, $class = '')
 	{
         if( $link )
         {
             echo( '<a class="post-thumbnail" href="' . esc_url( get_permalink() ) . '" >' );
-            echo( ' ' . vi_include_post_by::get_thumbnail_tag($id, $class) );
+            echo( ' ' . vi_include_post_by::get_thumbnail_tag($post, $class) );
             echo( '</a>' );
         }
         else
         {
             echo( '<div class="post-thumbnail">' );
-            echo( ' ' . vi_include_post_by::get_thumbnail_tag($id, $class) );
+            echo( ' ' . vi_include_post_by::get_thumbnail_tag($post, $class) );
             echo( '</div>' );
         }
         //gotta fix things after getting the thumbnail
@@ -371,7 +370,7 @@ class vi_include_post_by
 	/**
 	 * include post by ID
 	 *
-	 * @version 0.3.191007
+	 * @version 0.3.200415
 	 * @since 0.1.181219
 	 */
 	public static function include_post_by_id( $attr )
@@ -398,16 +397,7 @@ class vi_include_post_by
 
 	    $more_text = sanitize_text_field( $moretext );
 
-	    //backward capability
-	    foreach( $display_option_input as $key => &$value )
-	    {
-	        switch( $value )
-	        {
-	            case 'link':
-	                $link = true;
-	                break;
-	        }
-	    }
+	    if ( $link === 'false' ) $link = false; // just to be sure...
 
 
 	    //get started, query the post, start a new loop
@@ -444,7 +434,7 @@ class vi_include_post_by
 				                vi_include_post_by::get_meta();
 				                break;
 				            case 'thumbnail':
-				                vi_include_post_by::get_thumbnail($id, $link, $class);
+				                vi_include_post_by::get_thumbnail($the_posts, $link, $class);
 				                break;
 				            case 'content':
 				                vi_include_post_by::get_content();
@@ -462,7 +452,7 @@ class vi_include_post_by
 				            	//default ordering
 				                vi_include_post_by::get_title($link);
 				                vi_include_post_by::get_meta();
-				                vi_include_post_by::get_thumbnail($id, $link, $class);
+				                vi_include_post_by::get_thumbnail($the_posts, $link, $class);
 				                vi_include_post_by::get_content();
 				                vi_include_post_by::get_footer();
 				                break;
@@ -561,7 +551,7 @@ class vi_include_post_by
 	        }
 
 	        //orderby
-	        if ( !is_null( $orderby ) && ( preg_match('/^[a-zA-Z\_]+$/', $orderby ) != 1) )
+	        if ( !is_null( $orderby ) && ( preg_match('/^[a-zA-Z\_ ]+$/', $orderby ) != 1) )
 	        {
 	            $orderby = 'date';
 	        }

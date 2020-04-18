@@ -1,10 +1,10 @@
 # === VI: Include Post By ===
 Contributors: Knighthawk
-Tags: shortcode, vars, options, post, params, 
+Tags: shortcode, vars, options, post, params,
 Requires at least: 4.0
 Requires PHP: 5.2.4
 Tested up to: 5.4
-Version: 0.4.200411
+Version: 0.4.200415
 Stable tag: trunk
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -69,8 +69,13 @@ With the exception of the ID, every option in the includ-post-by-id is also incl
 
 ## == Changelog ==
 
+*0.4.200415*
+* Fixed: thumbnail
+* uses $post as parameter to avoid a further lookup
+* Still can use ID, but it never will.
+
 *0.4.200411*
-* Fixed: offset now works as expected. 
+* Fixed: offset now works as expected.
 * Was previously only working for pageination, it now works with both pageination AND a starting offset.
 
 
