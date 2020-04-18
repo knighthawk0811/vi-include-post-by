@@ -20,54 +20,10 @@ class vi_include_post_by
     # Shortcode Functions (are plugin territory)
     --------------------------------------------------------------*/
 
-    /*--------------------------------------------------------------
-    # Instructions
-    --------------------------------------------------------------*/
-    /*
-    [include-post-by-id
-	    id="123"
-	    display="title,meta,thumbnail,content,excerpt,more,footer,all"
-	    class="custom-class-name"
-	    link="true"
-	    moretext="Continue Reading"
-    ]
-	    id = post to be shown
-	    display = display options CSV, order counts
-	    link = whether the title/thubmnail are links to the post
-	    moretext = edit the text of the read-more link
-
-
-    [include-post-by-cat
-        cat="123"
-        order="DESC"
-        orderby="date"
-        paginate=true
-        perpage="5"
-        offset="0"
-	    display="title,meta,thumbnail,content,excerpt,more,footer,all"
-	    class="custom-class-name"
-	    container="custom-class-name"
-	    link="true"
-        moretext="Continue Reading"
-    ]
-	    cat = category to be shown
-	    order = sort order
-	    orderby = what to sort by
-	    paginate = true/false
-	    perpage = items per page. -1 = all
-	    offset = how many posts to skip, useful if you are combining multiple includes
-	    display = from include-post-by-id
-	    class= custom-class-name used in the internal element
-	    container= custom-class-name used in the wrapper element
-	    link = from include-post-by-id
-	    moretext = from include-post-by-id
-	//*/
 
     /*--------------------------------------------------------------
     # TODO
     --------------------------------------------------------------*/
-
-    //all:  put pageination style into CSS classes
 
     //include_by_cat
     //only do "get_post" once then programatically do the offset and page rather than query the DB again
@@ -362,6 +318,27 @@ class vi_include_post_by
 	}
 
 
+	/**
+	 * get the paginate page number links
+	 *
+	 * @version 0.3.191007
+	 * @since 0.3.191007
+	 */
+	private static function get_page_number_link($number, $current)
+	{
+		$style = 'display:inline-block; margin:3px; min-width:20px; padding:0 3px; background:rgba(0,0,0,0.25);';
+        if( $number == $current )
+        {
+            $style .= ' border:1px solid #000000; ';
+        }
+        else
+        {
+            $style .= ' border:1px solid rgba(0,0,0,0); ';
+        }
+        return '<a style="' . $style . '" href="' . esc_url(get_permalink()) . '?pn=' . $number . '" title="Page ' . $number . '">' . $number . '</a>';
+	}
+
+
 
     /*--------------------------------------------------------------
     # Shortcode Functions (are plugin territory)
@@ -577,12 +554,12 @@ class vi_include_post_by
 	    	$container = sanitize_text_field( $container );
 	    	$container = get_category( $cat )->slug . ' ' . $container;
 
-	        //count all posts
-	        $post_count = 0;
-	        $transient_name = 'vi_' . md5( $intput_string ) . '_c';
-	        if( false === ( $post_count = get_transient( $transient_name ) ) )
+	        //get all posts
+	        $post_array = array();
+	        $transient_name = 'vi_ipb_' . md5( $intput_string );
+	        if( false === ( $post_array = get_transient( $transient_name ) ) )
 	        {
-	            // It wasn't there, so regenerate the data and save the transient
+	            //create a new transient
 	            $args = array(
 	                'posts_per_page'   => -1,
 	                'offset'           => 0,
@@ -592,33 +569,25 @@ class vi_include_post_by
 	                'post_type'        => 'post',
 	                'post_status'      => 'publish',
 	                );
-	            $post_count = count( get_posts( $args ) );
-	            set_transient( $transient_name, $post_count, 10 * MINUTE_IN_SECONDS );
-	        }
-	        //get content for just the current page of posts
-	        $transient_name = 'vi_' . md5( $intput_string ) . '_' . $page_current;
-	        if( false === ( $post_array = get_transient( $transient_name ) ) )
-	        {
-	            // It wasn't there, so regenerate the data and save the transient
-	            $args = array(
-	                'posts_per_page'   => $perpage,
-	                'offset'           => $offset,
-	                'category'         => "$cat",
-	                'orderby'          => "$orderby",
-	                'order'            => "$order",
-	                'post_type'        => 'post',
-	                'post_status'      => 'publish',
-	                );
 	            $post_array = get_posts( $args );
-	            set_transient($transient_name, $post_array, 10 * MINUTE_IN_SECONDS );
+	            set_transient( $transient_name, $post_array, 10 * MINUTE_IN_SECONDS );
 	        }
+	        //array_slice ( array $array , int $offset [, int $length = NULL [, bool $preserve_keys = FALSE ]] )
+	        $post_array = array_slice( $post_array, $offset, null, true);
 
 	        //display content
         	$output .= '<div class="include-post-by-container ' . $container . '">';
 	        if(is_array( $post_array ) && count( $post_array ) > 0)
 	        {
+
+	        	//only process the amount that will be one a single page
+				$i = 0;
 	            foreach( $post_array as $item )
 	            {
+	            	if($i++ >= $perpage)
+	            	{
+	            		break;
+	            	}
 	                //call site_include_post_by_id();
 	                $args = array(
 	                    'id'       =>"$item->ID",
@@ -634,88 +603,68 @@ class vi_include_post_by
 				//pagination
 	            if( $paginate )
 	            {
+                    // actual count of pages = intval( round-up( count("posts-left") / perpage ) ) + current-page# - 1
+                    $page_count = intval( ceil( count( $post_array ) / $perpage ) + $page_current - 1 );
+
 	            	$output .= '<div class="paginate-container">';
 
-	                //paginate link back to previous/newer content
+	                //paginate link to previous/first content
 	                if( $page_current > 1 )
 	                {
-	                    $page_previous = $page_current - 1;
-	                    $url_var = '?pn=';
-	                    if( $page_previous <= 1 )
-                    	{
-                    		$url_var = '';
-                    	}
-                    	else
-                		{
-                			$url_var .= $page_previous;
-                		}
-	                    $output .= '<a class="previous" style="clear:left;float:left;" href="' . esc_url( get_permalink() ) . $url_var . '" title="Previous Page">Previous Page</a>';
+	                    $output .= '<div class="previous" style="clear:left;float:left;">';
+	                    $output .= '<a href="' . esc_url( get_permalink() ) . '?pn=' . ( $page_current - 1 ) . '" title="Previous Page">Previous Page</a>';
+	                    $output .= '</div>';
 	                }
-	                //paginate link to next/older content
-	                if( count( $post_array ) == $perpage )
+
+	                //paginate link to next/last content
+	                if( $page_current < $page_count )
 	                {
-	                    //is a link even needed?
-	                    if( false === ( $post_array_next = get_transient( 'cat_page_' . str_ireplace( ',','_',$cat ) . '__' . ( $page_current + 1 ) ) ) )
-	                    {
-	                        // It wasn't there, so regenerate the data and save the transient
-	                        $args = array(
-	                            'posts_per_page'   => $perpage,
-	                            'offset'           => ($page_current + 1) * $perpage,
-	                            'category'         => "$cat",
-	                            'orderby'          => "$orderby",
-	                            'order'            => "$order",
-	                            'post_type'        => 'post',
-	                            'post_status'      => 'publish',
-	                            );
-	                        $post_array_next = get_posts($args);
-	                        set_transient( 'cat_page_' . str_ireplace( ',','_',$cat ) . '__' . ( $page_current + 1 ), $post_array_next, 10 * MINUTE_IN_SECONDS );
-	                    }
-	                    $count = count( $post_array_next );
-	                    if( count( $count ) > 0 )
-	                    {
-	                        $output .= '<a class="next" style="clear:right;float:right;" href="' . esc_url( get_permalink() ) . '?pn=' . ( $page_current + 1 ) . '" title="Next Page">Next Page</a>';
-	                    }
+	                    $output .= '<div class="next" style="clear:right;float:right;">';
+	                    $output .= '<a href="' . esc_url( get_permalink() ) . '?pn=' . ( $page_current + 1 ) . '" title="Next Page">Next Page</a>';
+	                    $output .= '</div>';
 	                }
+
+
 	                //paginate page numbers
-	                if( $post_count > $perpage )
+	                if( $page_count > 2 )
 	                {
+	                	//paginate page numbers
 	                    $output .= '<div class="page-number" style="height:40px; margin:0 auto; position:relative; width:220px; text-align:center;">';
-	                    $page_count = intval( ceil( $post_count / $perpage ) );
-	                    $i = 1;
-	                    $step = 0;
-	                    if( $page_count > 4 && $page_current > 1 )
+
+	                    //print page 1
+	                    $output .= self::get_page_number_link( 1, $page_current );
+
+
+	                    //if more than 4 away from first, print ...
+	                    if( $page_current > 4 )
 	                    {
-	                        $i = $page_current - 1;
+	                        $output .= '...';
 	                    }
-	                    if( $i > 1 )
+
+
+	                    //start at current - 2
+	                    $i = $page_current - 2;
+	                    //must be at least page 2
+	                    if( $i < 2 ) 
+                    	{
+                    		$i = 2;
+                    	}
+	                    //print from (current - 2) up to (current + 2)	                    
+	                    for( $i ; $i < $page_count ; $i++ )
 	                    {
-	                        $link_extra_style = ' border:1px solid rgba(0,0,0,0); ';
-	                        $output .= '<a style="display:inline-block; margin:3px; min-width:20px; padding:0 3px; background:rgba(0,0,0,0.25); ' . $link_extra_style . '" href="' . esc_url(get_permalink()) . '?pn=1" title="Page 1">1</a>';
-	                        if( $i > 2 )
-	                        {
-	                            $output .= '...';
-	                        }
+	                    	if( $i > $page_current + 2 ) continue;
+	                    	$output .= self::get_page_number_link( $i, $page_current );
 	                    }
-	                    for( $i; $i <= $page_count; $i++ )
+
+	                    //if more than 3 away from last print ...
+	                    if( $page_current < ( $i - 3 ) )
 	                    {
-	                        $step++;
-	                        if( $step < 4 || $i == $page_count )
-	                        {
-	                            if( $i == $page_count && $step > 3 )
-	                            {
-	                                $output .= '...';
-	                            }
-	                            if( $i == $page_current )
-	                            {
-	                                $link_extra_style = ' border:1px solid #000000; ';
-	                            }
-	                            else
-	                            {
-	                                $link_extra_style = ' border:1px solid rgba(0,0,0,0); ';
-	                            }
-	                            $output .= '<a style="display:inline-block; margin:3px; min-width:20px; padding:0 3px; background:rgba(0,0,0,0.25); ' . $link_extra_style . '" href="' . esc_url(get_permalink()) . '?pn=' . $i . '" title="Page ' . $i . '">' . $i . '</a>';
-	                        }
+	                        $output .= '...';
 	                    }
+
+	                   	//print last page
+	                    $output .= self::get_page_number_link( $page_count, $page_current );
+
 	                    $output .= '</div>';//page-number
 	                }
 	                $output .= '</div>';//paginate-container

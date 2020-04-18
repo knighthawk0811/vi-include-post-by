@@ -1,10 +1,10 @@
 # === VI: Include Post By ===  
 Contributors: Knighthawk  
-Tags: shortcode, vars, options, post, params,   
+Tags: shortcode, vars, options, post, params, include  
 Requires at least: 4.0  
 Requires PHP: 5.2.4  
 Tested up to: 5.4  
-Version: 0.4.200411  
+Version: 0.4.200417  
 Stable tag: trunk  
 License: GPLv2  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
@@ -68,6 +68,13 @@ With the exception of the ID, every option in the includ-post-by-id is also incl
 
 
 ## == Changelog ==
+
+*0.4.200417*
+* Update: transients
+* Only uses a single transient, and lookup. Offset is processed internally rather than putting the weight on a DB query.
+* Update: paginate
+* Page numbers and "..." now work properly under all tested circumstances.
+* re-write was needed after the transient/offset changes.
 
 *0.4.200411*
 * Fixed: offset now works as expected. 
