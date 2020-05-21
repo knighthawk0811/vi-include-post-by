@@ -1,13 +1,13 @@
-# === VI: Include Post By ===  
-Contributors: Knighthawk  
-Tags: shortcode, vars, options, post, params, include  
-Requires at least: 4.0  
-Requires PHP: 5.2.4  
-Tested up to: 5.4  
-Version: 0.4.200417  
-Stable tag: trunk  
-License: GPLv2  
-License URI: http://www.gnu.org/licenses/gpl-2.0.html  
+# === VI: Include Post By ===
+Contributors: Knighthawk
+Tags: shortcode, vars, options, post, params, include
+Requires at least: 4.0
+Requires PHP: 5.2.4
+Tested up to: 5.4
+Version: 0.4.200520
+Stable tag: trunk
+License: GPLv2
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Shortcodes allowing you to display posts inside other posts/pages
 
@@ -17,7 +17,8 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 
 ## == Coming Soon ==
 
-More display options. Bootstrap Cards option. Custom class names with a header/body/footer element.
+More display options.
+Taxonomy and post type agnostic
 
 
 ## == Instructions ==
@@ -25,20 +26,32 @@ Shortcode for including a single post by its ID
 
     [include-post-by-id
      id="123"
-     display="title,meta,thumbnail,content,excerpt,more,footer,all"
-     class="custom-class-name"
      link="true"
      moretext="Continue Reading"
+     card="false"
+     display="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display_header="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display_body="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display_footer="title,meta,thumbnail,content,excerpt,more,footer,all"
+     class_inner="custom-class-name"
+     class_header="custom-class-name"
+     class_body="custom-class-name"
+     class_footer="custom-class-name"
+     class_thumbnail="custom-class-name"
     ]
 
 * id = post to be shown
-* display = display options CSV, order counts
 * link = whether the title/thubmnail are links to the post
 * moretext = edit the text of the read-more link
+* card = will set class names to bootstrap cards, no further class customization is required
+* display[x] = display options as a CSV, order counts
+* class[x] = a custom class name that will be added to each container element
 
 
 Shortcode for including single/multiple posts by their category
-With the exception of the ID, every option in the includ-post-by-id is also included here. This function will query the DB and then call the single include once for each resulting post.
+Every option required or used in the include-post-by-id will also pass through here.
+This function will query the DB and then call include-post-by-id once for each resulting post.
+Shown here are only the options which are unique to this function.
 
     [include-post-by-cat
      cat="123"
@@ -47,11 +60,7 @@ With the exception of the ID, every option in the includ-post-by-id is also incl
      paginate=true
      perpage="5"
      offset="0"
-     display="title,meta,thumbnail,content,excerpt,more,footer,all"
-     class="custom-class-name"
-     container="custom-class-name"
-     link="true"
-     moretext="Continue Reading"
+     class_container="custom-class-name"
     ]
 
 * cat = category to be shown
@@ -60,14 +69,18 @@ With the exception of the ID, every option in the includ-post-by-id is also incl
 * paginate = true/false
 * perpage = items per page. -1 = all
 * offset = how many posts to skip, useful if you are combining multiple includes
-* display = from include-post-by-id
-* class= custom-class-name used in the internal element
-* container= custom-class-name used in the wrapper element
-* link = from include-post-by-id
-* moretext = from include-post-by-id
+* class_container = custom-class-name used in the wrapper element
 
 
 ## == Changelog ==
+
+*0.4.200520*
+* Update: display and class
+* added: card = true for auto bootstrap class names
+* added: display_header, display_body, display_footer. each internal element can be targeted to a header, body, and footer
+* added: class for the header,body,footer, and thumbnail
+* changed: thumbnail is now displayed as a background image in a container with styling set to a given aspect ratio.
+* todo: may add suport for classic thumbnails
 
 *0.4.200417*
 * Update: transients
@@ -77,7 +90,7 @@ With the exception of the ID, every option in the includ-post-by-id is also incl
 * re-write was needed after the transient/offset changes.
 
 *0.4.200411*
-* Fixed: offset now works as expected. 
+* Fixed: offset now works as expected.
 * Was previously only working for pageination, it now works with both pageination AND a starting offset.
 
 

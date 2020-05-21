@@ -1,0 +1,73 @@
+/*!
+Plugin Name: VI: Include Post By
+Plugin URI: http://neathawk.com
+Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
+Version: 0.4.200417
+Author: Joseph Neathawk
+Author URI: http://Neathawk.com
+License: GNU General Public License v2 or later
+*/
+
+/*--------------------------------------------------------------
+# VI Stuff
+--------------------------------------------------------------*/
+/*
+element {
+	layout(position)
+
+	content(text)
+
+	design(background)
+
+	other(z-index)
+}
+/*--------------------------------------------------------------
+>>> TABLE OF CONTENTS:
+----------------------------------------------------------------
+# Main Structure
+# Thumbnail
+--------------------------------------------------------------*/
+
+
+/*--------------------------------------------------------------
+# Main Structure
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+# Thumbnail
+--------------------------------------------------------------*/
+
+/* forced aspect ratios */
+.aspect-ratio {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+}
+.aspect-ratio .dummy,
+.aspect-ratio.ar-1-1 .dummy {
+	/*default aspect ratio */
+    margin-bottom: 100%; /* 1:1; aspect ratio */
+}
+.aspect-ratio.ar-4-3 .dummy {
+    margin-bottom: 75%; /* 4:3 aspect ratio */
+}
+.aspect-ratio.ar-16-9 .dummy {
+    margin-bottom: 56.25%%; /* 16:9; aspect ratio */
+}
+.aspect-ratio.ar-3-4 .dummy {
+    margin-bottom: 125%; /* 3:4; aspect ratio */
+}
+.aspect-ratio.ar-9-16 .dummy {
+    margin-bottom: 177.7%; /* 9:16; aspect ratio */
+}
+.aspect-ratio .element {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    background-size:cover;
+    background-position:center center;
+}
+

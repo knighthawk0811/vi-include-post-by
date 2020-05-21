@@ -3,7 +3,7 @@
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
 Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
-Version: 0.4.200417
+Version: 0.4.200520
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later
@@ -16,6 +16,7 @@ class vi_include_post_by
     ----------------------------------------------------------------
     # Instructions
     # TODO
+    # Constructive Functions
     # Reusable Functions
     # Shortcode Functions (are plugin territory)
     --------------------------------------------------------------*/
@@ -30,6 +31,23 @@ class vi_include_post_by
     //put the desired posts into a new array and delete the old array
     //then you should be able to carry on as usual
     //??? does this help performance considering that many users will not continue on to further pages?
+
+
+    /*--------------------------------------------------------------
+    # Constructive Functions
+    --------------------------------------------------------------*/
+	/**
+	 * ENQUEUE SCRIPTS AND STYLES
+	 *
+	 * wp_enqueue_style( string $handle, string $src = '', array $deps = array(), string|bool|null $ver = false, string $media = 'all' )
+	 * wp_enqueue_script( string $handle, string $src = '', array $deps = array(), string|bool|null $ver = false, bool $in_footer = false )
+	 *
+	 * @link https://developer.wordpress.org/themes/basics/including-css-javascript/#stylesheets
+	 */
+	public static function enqueue_scripts() {
+	    //style for the plugin
+	    wp_enqueue_style( 'vi-include-post-by', plugins_url( '/style.css', __FILE__ ), NULL , NULL , 'all' );
+	}
 
 
     /*--------------------------------------------------------------
@@ -155,14 +173,18 @@ class vi_include_post_by
 	{
         if( $link )
         {
-            echo( '<a class="post-thumbnail" href="' . esc_url( get_permalink() ) . '" >' );
-            echo( ' ' . vi_include_post_by::get_thumbnail_tag($post, $class) );
+            echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
+            echo( '<div class="dummy"></div>' );
+            echo( '<a href="' . esc_url( get_permalink() ) . '" >' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ';"></div>' );
             echo( '</a>' );
+            echo( '</div>' );
         }
         else
         {
-            echo( '<div class="post-thumbnail">' );
-            echo( ' ' . vi_include_post_by::get_thumbnail_tag($post, $class) );
+            echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
+            echo( '<div class="dummy"></div>' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ';"></div>' );
             echo( '</div>' );
         }
         //gotta fix things after getting the thumbnail
@@ -363,18 +385,55 @@ class vi_include_post_by
 	    //get input
 	    extract( shortcode_atts( array(
 	    	'id' => NULL,
-	    	'display' => 'all',
 	    	'link' => true,
+	    	'moretext' => 'Continue Reading',
+	    	'display' => 'all',
+	    	'display_header' => '',
+	    	'display_body' => '',
+	    	'display_footer' => '',
+	    	'card' => false,
 	    	'class' => '',
-	    	'moretext' => 'Continue Reading'
+	    	'class_inner' => '',
+	    	'class_header' => '',
+	    	'class_body' => '',
+	    	'class_footer' => '',
+	    	'class_thumbnail' => '',
+	    	'first_item' => false,
 	    ), $attr ) );
 
 	    //remove spaces, and build array
-	    $display_option_input = explode(',', str_replace(' ', '', $display));
+
+	    $display_header = sanitize_text_field( $display_header );
+	    $display_header_option_input = explode(',', str_replace(' ', '', $display_header));
+
+	    $display_body = sanitize_text_field( $display_body );
+	    if(empty($display_body)) $display_body = sanitize_text_field( $display );
+	    $display_body_option_input = explode(',', str_replace(' ', '', $display_body));
+
+	    $display_footer = sanitize_text_field( $display_footer );
+	    $display_footer_option_input = explode(',', str_replace(' ', '', $display_footer));
+
+	    $class = sanitize_text_field( $class );
+	    $class_inner = sanitize_text_field( $class_inner );
+	    if(empty($class_inner)) $class_inner = $class ;
+	    $class_header = sanitize_text_field( $class_header );
+	    $class_body = sanitize_text_field( $class_body );
+	    $class_footer = sanitize_text_field( $class_footer );
+	    $class_thumbnail = sanitize_text_field( $class_thumbnail );
 
 	    $more_text = sanitize_text_field( $moretext );
 
 	    if ( $link === 'false' ) $link = false; // just to be sure...
+	    if ( $card === 'false' ) $card = false; // just to be sure...
+	    if ( $first_item === 'false' ) $first_item = false; // just to be sure...
+
+	    if($card)
+	    {
+	    	$class.= ' card';
+	    	$class_header .= ' card-header';
+	    	$class_body .= ' card-body';
+	    	$class_footer .= ' card-footer';
+	    }
 
 
 	    //get started, query the post, start a new loop
@@ -397,50 +456,153 @@ class vi_include_post_by
 	                begin the output
 	                ***********************/
 
-        			echo( '<div class="article include-post-by ' . $class . '">' );
-
 	                //do each display in the order in which it was given by the user
-				    foreach( $display_option_input as $key => &$value )
-				    {
-				        switch( $value )
-				        {
-				            case 'title':
-				                vi_include_post_by::get_title($link);
-				                break;
-				            case 'meta':
-				                vi_include_post_by::get_meta();
-				                break;
-				            case 'thumbnail':
-				                vi_include_post_by::get_thumbnail($the_posts, $link, $class);
-				                break;
-				            case 'content':
-				                vi_include_post_by::get_content();
-				                break;
-				            case 'excerpt':
-				                vi_include_post_by::get_excerpt();
-				                break;
-				            case 'more':
-				                vi_include_post_by::get_more($more_text);
-				                break;
-				            case 'footer':
-				                vi_include_post_by::get_footer();
-				                break;
-				            case 'all':
-				            	//default ordering
-				                vi_include_post_by::get_title($link);
-				                vi_include_post_by::get_meta();
-				                vi_include_post_by::get_thumbnail($the_posts, $link, $class);
-				                vi_include_post_by::get_content();
-				                vi_include_post_by::get_footer();
-				                break;
-				            default:
-				                //any other values are garbage in
-				                $value = null;
-				                unset($display_option_input[$key]);
-				        }
-				    }
+	                //also break apart into -> header, body, footer
+	                if($first_item) $class_inner .= ' active';
 
-        			echo( '</div>' );//article
+        			echo( '<div class="include-post-by inner ' . $class_inner . '">' );
+
+        			//HEADER
+        			if(!empty($display_header))
+        			{
+	        			echo( '<div class="header ' . $class_header . '">' );
+					    foreach( $display_header_option_input as $key => &$value )
+					    {
+					        switch( $value )
+					        {
+					            case 'title':
+					                vi_include_post_by::get_title($link);
+					                break;
+					            case 'meta':
+					                vi_include_post_by::get_meta();
+					                break;
+					            case 'thumbnail':
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                break;
+					            case 'content':
+					                vi_include_post_by::get_content();
+					                break;
+					            case 'excerpt':
+					                vi_include_post_by::get_excerpt();
+					                break;
+					            case 'more':
+					                vi_include_post_by::get_more($more_text);
+					                break;
+					            case 'footer':
+					                vi_include_post_by::get_footer();
+					                break;
+					            case 'all':
+					            	//default ordering
+					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_footer();
+					                break;
+					            default:
+					                //any other values are garbage in
+					                $value = null;
+					                unset($display_option_input[$key]);
+					        }
+					    }
+	        			echo( '</div>' );//HEADER
+	        		}
+
+        			//BODY
+        			if(!empty($display_body))
+        			{
+	        			echo( '<div class="body ' . $class_body. '">' );
+					    foreach( $display_body_option_input as $key => &$value )
+					    {
+					        switch( $value )
+					        {
+					            case 'title':
+					                vi_include_post_by::get_title($link);
+					                break;
+					            case 'meta':
+					                vi_include_post_by::get_meta();
+					                break;
+					            case 'thumbnail':
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                break;
+					            case 'content':
+					                vi_include_post_by::get_content();
+					                break;
+					            case 'excerpt':
+					                vi_include_post_by::get_excerpt();
+					                break;
+					            case 'more':
+					                vi_include_post_by::get_more($more_text);
+					                break;
+					            case 'footer':
+					                vi_include_post_by::get_footer();
+					                break;
+					            case 'all':
+					            	//default ordering
+					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_footer();
+					                break;
+					            default:
+					                //any other values are garbage in
+					                $value = null;
+					                unset($display_option_input[$key]);
+					        }
+					    }
+	        			echo( '</div>' );//BODY
+	        		}
+
+        			//FOOTER
+        			if(!empty($display_footer))
+        			{
+	        			echo( '<div class="footer ' . $class_footer . '">' );
+					    foreach( $display_footer_option_input as $key => &$value )
+					    {
+					        switch( $value )
+					        {
+					            case 'title':
+					                vi_include_post_by::get_title($link);
+					                break;
+					            case 'meta':
+					                vi_include_post_by::get_meta();
+					                break;
+					            case 'thumbnail':
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                break;
+					            case 'content':
+					                vi_include_post_by::get_content();
+					                break;
+					            case 'excerpt':
+					                vi_include_post_by::get_excerpt();
+					                break;
+					            case 'more':
+					                vi_include_post_by::get_more($more_text);
+					                break;
+					            case 'footer':
+					                vi_include_post_by::get_footer();
+					                break;
+					            case 'all':
+					            	//default ordering
+					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_footer();
+					                break;
+					            default:
+					                //any other values are garbage in
+					                $value = null;
+					                unset($display_option_input[$key]);
+					        }
+					    }
+	        			echo( '</div>' );//FOOTER
+	        		}
+
+
+
+        			echo( '</div>' );//include-post-by
 
         			//echo( ' <div style="display:none;">' );
         			//var_dump( $display_option_input );
@@ -483,6 +645,7 @@ class vi_include_post_by
 	    //*/
 
 	    $output = '';
+	    $first_item = true;
 	    $input_array =  shortcode_atts( array(
 	    	'cat' => NULL,
 	    	'order' => 'DESC',
@@ -491,10 +654,8 @@ class vi_include_post_by
 	    	'paginate' => true,
 	    	'perpage' => 5,
 	    	'offset' => 0,
-	    	'display' => 'all',
-	    	'class' => '',
-	    	'container' => '',
-	    	'link' => true,
+	    	'class_container' => '',
+	    	'parent_id' => '',
 	    	'moretext' => 'Continue Reading'
 	    ), $attr );
 		$intput_string = implode($input_array);
@@ -548,11 +709,8 @@ class vi_include_post_by
 	        }
 	        $offset += $offset_by_page;
 
-	    	$class = sanitize_text_field( $class );
-	    	$class = get_category( $cat )->slug . ' ' . $class;
-
-	    	$container = sanitize_text_field( $container );
-	    	$container = get_category( $cat )->slug . ' ' . $container;
+	    	$class_container = sanitize_text_field( $class_container );
+	    	$parent_id = sanitize_text_field( $parent_id );
 
 	        //get all posts
 	        $post_array = array();
@@ -576,7 +734,7 @@ class vi_include_post_by
 	        $post_array = array_slice( $post_array, $offset, null, true);
 
 	        //display content
-        	$output .= '<div class="include-post-by-container ' . $container . '">';
+        	$output .= '<div id="' . $parent_id .'" class="include-post-by-container ' . get_category( $cat )->slug . ' ' . $class_container . '">';
 	        if(is_array( $post_array ) && count( $post_array ) > 0)
 	        {
 
@@ -588,15 +746,12 @@ class vi_include_post_by
 	            	{
 	            		break;
 	            	}
-	                //call site_include_post_by_id();
-	                $args = array(
-	                    'id'       =>"$item->ID",
-	                    'display'   =>"$display",
-	                    'moretext'   =>"$moretext",
-	                    'link'   =>"$link",
-	                    'class' => "$class"
-	                    );
-	                $output .= vi_include_post_by::include_post_by_id( $args );
+
+		            $attr['id'] = $item->ID;
+		            //used to note the first item is "active" for bootstrap stuff like a carousel
+		            $attr['first_item'] = $first_item;
+		            $first_item = false;
+	                $output .= vi_include_post_by::include_post_by_id( $attr );
 	            }
 
 
@@ -645,11 +800,11 @@ class vi_include_post_by
 	                    //start at current - 2
 	                    $i = $page_current - 2;
 	                    //must be at least page 2
-	                    if( $i < 2 ) 
+	                    if( $i < 2 )
                     	{
                     		$i = 2;
                     	}
-	                    //print from (current - 2) up to (current + 2)	                    
+	                    //print from (current - 2) up to (current + 2)
 	                    for( $i ; $i < $page_count ; $i++ )
 	                    {
 	                    	if( $i > $page_current + 2 ) continue;
@@ -684,3 +839,7 @@ class vi_include_post_by
 
 add_shortcode( 'include-post-by-id', Array(  'vi_include_post_by', 'include_post_by_id' ) );
 add_shortcode( 'include-post-by-cat', Array( 'vi_include_post_by', 'include_post_by_cat' ) );
+
+
+//enqueue scripts
+add_action( 'wp_enqueue_scripts', Array( 'vi_include_post_by', 'enqueue_scripts' ) );
