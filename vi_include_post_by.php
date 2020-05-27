@@ -399,7 +399,12 @@ class vi_include_post_by
 	    	'class_footer' => '',
 	    	'class_thumbnail' => '',
 	    	'first_item' => false,
+	    	'error_report' => false
 	    ), $attr ) );
+
+
+	    if ( $error_report === 'true' ) $error_report = true;
+	    if($error_report){$output .= '*** error reporting enabled <br>';}
 
 	    //remove spaces, and build array
 
@@ -434,6 +439,9 @@ class vi_include_post_by
 	    	$class_body .= ' card-body';
 	    	$class_footer .= ' card-footer';
 	    }
+
+
+	    if($error_report){$output .= '*** sanitization complete <br>';}
 
 
 	    //get started, query the post, start a new loop
@@ -604,9 +612,7 @@ class vi_include_post_by
 
         			echo( '</div>' );//include-post-by
 
-        			//echo( ' <div style="display:none;">' );
-        			//var_dump( $display_option_input );
-        			//echo( '</div>');
+					if($error_report){$output .= '<pre>' . var_dump_return( $display_option_input ) . '</pre>';}
 
 
 	                /***********************
@@ -620,7 +626,7 @@ class vi_include_post_by
 	        $output = ob_get_contents();
 	        ob_end_clean();
 	    }
-	    //return $output
+
 	    return $output;
 	}//include_post_by_id
 
@@ -652,18 +658,24 @@ class vi_include_post_by
 	    	'orderby' => 'date',
 	    	'pageinate' => true,
 	    	'paginate' => true,
-	    	'perpage' => 5,
+	    	'perpage' => -1,
 	    	'offset' => 0,
 	    	'class_container' => '',
 	    	'parent_id' => '',
-	    	'moretext' => 'Continue Reading'
+	    	'moretext' => 'Continue Reading',
+	    	'error_report' => false
 	    ), $attr );
 		$intput_string = implode($input_array);
 	    extract( $input_array );
 
 
+	    if ( $error_report === 'true' ) $error_report = true;
+	    if($error_report){$output .= '*** error reporting enabled <br>';}
+
+
 	    if ( !is_null( $cat ) && ( is_numeric( $cat ) || preg_match( '/^[0-9,]+$/', $cat ) ) && !is_feed() )
 	    {
+
 	        //paginate
 	        if ( $paginate === 'false' ) $paginate = false; // just to be sure...
 	        if ( $pageinate === 'false' ) $paginate = false; // used to be spelled wrong in an old version
@@ -679,7 +691,7 @@ class vi_include_post_by
 	        }
 	        else
 	        {
-	            $perpage = 5;
+	            $perpage = -1;
 	        }
 
 	        //order
@@ -712,6 +724,9 @@ class vi_include_post_by
 	    	$class_container = sanitize_text_field( $class_container );
 	    	$parent_id = sanitize_text_field( $parent_id );
 
+
+	    	if($error_report){$output .= '*** sanitization complete <br>';}
+
 	        //get all posts
 	        $post_array = array();
 	        $transient_name = 'vi_ipb_' . md5( $intput_string );
@@ -733,6 +748,9 @@ class vi_include_post_by
 	        //array_slice ( array $array , int $offset [, int $length = NULL [, bool $preserve_keys = FALSE ]] )
 	        $post_array = array_slice( $post_array, $offset, null, true);
 
+
+	    	if($error_report){$output .= '*** content gathered, transient id = ' . $transient_name . '<br>';}
+
 	        //display content
         	$output .= '<div id="' . $parent_id .'" class="include-post-by-container ' . get_category( $cat )->slug . ' ' . $class_container . '">';
 	        if(is_array( $post_array ) && count( $post_array ) > 0)
@@ -742,7 +760,7 @@ class vi_include_post_by
 				$i = 0;
 	            foreach( $post_array as $item )
 	            {
-	            	if($i++ >= $perpage)
+	            	if( $i++ >= $perpage && $perpage > 0 )
 	            	{
 	            		break;
 	            	}
@@ -751,9 +769,14 @@ class vi_include_post_by
 		            //used to note the first item is "active" for bootstrap stuff like a carousel
 		            $attr['first_item'] = $first_item;
 		            $first_item = false;
+
+		            if($error_report){$output .= '<pre>' . var_dump_return( $item ) . '</pre>';}
+
 	                $output .= vi_include_post_by::include_post_by_id( $attr );
 	            }
 
+
+	    		if($error_report){$output .= '*** content complete, begin paginate <br>';}
 
 				//pagination
 	            if( $paginate )
@@ -832,6 +855,9 @@ class vi_include_post_by
 	    {
 	        //do nothing
 	    }
+
+
+		if($error_report){$output .= '<pre>' . var_dump_return( $post_array ) . '</pre>';}
 
 	    return $output;
 	}
