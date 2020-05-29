@@ -19,6 +19,7 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 
 More display options.
 Taxonomy and post type agnostic
+setable default thumbnail
 
 
 ## == Instructions ==

@@ -16,6 +16,7 @@ class vi_include_post_by
     ----------------------------------------------------------------
     # Instructions
     # TODO
+    # Attributes
     # Constructive Functions
     # Reusable Functions
     # Shortcode Functions (are plugin territory)
@@ -32,6 +33,10 @@ class vi_include_post_by
     //then you should be able to carry on as usual
     //??? does this help performance considering that many users will not continue on to further pages?
 
+    /*--------------------------------------------------------------
+    # Attributes
+    --------------------------------------------------------------*/
+    private static $error_report = false;
 
     /*--------------------------------------------------------------
     # Constructive Functions
@@ -89,7 +94,8 @@ class vi_include_post_by
 					if( 'post' === get_post_type($query2->post) || 'page' === get_post_type($query2->post) )
 					{
 						//already have a thumbnail? use that one
-						if(has_post_thumbnail($query2->post->ID))
+						//if(has_post_thumbnail($query2->post->ID))
+						if( get_the_post_thumbnail($query2->post->ID) != '' )
 						{
 							ob_start();
 							the_post_thumbnail_url('full');
@@ -102,7 +108,7 @@ class vi_include_post_by
 							ob_start();
 							ob_end_clean();
 							$matches = array();
-							$output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $query2->post->post_content, $matches);
+							$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $query2->post->post_content, $matches);
 							$the_post_thumbnail_url = $matches[1][0];
 
 							//set a default image inside the theme folder
@@ -120,10 +126,10 @@ class vi_include_post_by
 		elseif( is_object($input_post) )
 		{
 			//is this a proper post type?
-			if( 'post' === get_post_type($query2->post) || 'page' === get_post_type($query2->post) )
+			if( 'post' === get_post_type($input_post) || 'page' === get_post_type($input_post) )
 			{
 				//already have a thumbnail? use that one
-				if(has_post_thumbnail($query2->post->ID))
+				if( get_the_post_thumbnail($input_post->ID) != '' )
 				{
 					ob_start();
 					the_post_thumbnail_url('full');
@@ -136,8 +142,10 @@ class vi_include_post_by
 					ob_start();
 					ob_end_clean();
 					$matches = array();
-					$output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $query2->post->post_content, $matches);
+					$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $input_post->post_content, $matches);
 					$the_post_thumbnail_url = $matches[1][0];
+
+					//echo('<pre style="display:none">' . site_var_dump_return($input_post) . '</pre>');
 
 					//set a default image inside the theme folder
 					if(empty($the_post_thumbnail_url))
@@ -176,7 +184,7 @@ class vi_include_post_by
             echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
             echo( '<div class="dummy"></div>' );
             echo( '<a href="' . esc_url( get_permalink() ) . '" >' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ';"></div>' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ');"></div>' );
             echo( '</a>' );
             echo( '</div>' );
         }
@@ -184,7 +192,7 @@ class vi_include_post_by
         {
             echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
             echo( '<div class="dummy"></div>' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ';"></div>' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ');"></div>' );
             echo( '</div>' );
         }
         //gotta fix things after getting the thumbnail
@@ -485,7 +493,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -503,7 +511,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
@@ -531,7 +539,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -549,7 +557,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
@@ -577,7 +585,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -595,7 +603,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
