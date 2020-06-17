@@ -18,9 +18,10 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 ## == Coming Soon ==
 
 More display options.<br>
+Settings page with instructions and future settable options<br>
 Taxonomy and post type agnostic<br>
-setable default thumbnail<br>
-grab the actual small thumbnail image for srcset<br>
+Setable default thumbnail<br>
+Option to include the thumbnail **inside** the content for better floating, etc<br>
 
 
 ## == Instructions ==
@@ -76,6 +77,10 @@ Shown here are only the options which are unique to this function.<br>
 
 
 ## == Changelog ==
+
+*0.4.200617*
+* fix: typos
+* fix: card outer class wasn't working properly
 
 *0.4.200611*
 * added: support for a choice in thumbnail size

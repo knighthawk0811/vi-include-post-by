@@ -510,7 +510,7 @@ class vi_include_post_by
 
 	    if($card)
 	    {
-	    	$class.= ' card';
+	    	$class_inner.= ' card';
 	    	$class_header .= ' card-header';
 	    	$class_body .= ' card-body';
 	    	$class_footer .= ' card-footer';
@@ -542,9 +542,8 @@ class vi_include_post_by
 
 	                //do each display in the order in which it was given by the user
 	                //also break apart into -> header, body, footer
-	                if($first_item) $class_inner .= ' active';
 
-        			echo( '<div class="include-post-by inner ' . $class_inner . '">' );
+        			echo( '<div class="include-post-by inner ' . $class_inner . ($first_item ? ' active' : '') . '">' );
 
         			//HEADER
         			if(!empty($display_header))
