@@ -4,7 +4,7 @@ Tags: shortcode, vars, options, post, params, include<br>
 Requires at least: 4.0<br>
 Requires PHP: 5.2.4<br>
 Tested up to: 5.4<br>
-Version: 0.4.200611<br>
+Version: 0.4.200617<br>
 Stable tag: trunk<br>
 License: GPLv2<br>
 License URI: http://www.gnu.org/licenses/gpl-2.0.html<br>
@@ -31,11 +31,11 @@ Shortcode for including a single post by its ID
      link="true"
      moretext="Continue Reading"
      card="false"
-     display="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display="title,meta,thumbnail,content,excerpt,more,footer,**all**"
      display_header="title,meta,thumbnail,content,excerpt,more,footer,all"
-     display_body="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display_body="title,meta,thumbnail,content,excerpt,more,footer,**all**"
      display_footer="title,meta,thumbnail,content,excerpt,more,footer,all"
-     image_size="thumbnail,medium,large,full,custom-image-size"
+     image_size="thumbnail,medium,large,**full**,custom-image-size"
      class_inner="custom-class-name"
      class_header="custom-class-name"
      class_body="custom-class-name"

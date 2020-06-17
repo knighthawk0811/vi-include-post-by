@@ -3,7 +3,7 @@
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
 Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
-Version: 0.4.200520
+Version: 0.4.200617
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later

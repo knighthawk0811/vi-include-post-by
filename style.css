@@ -2,7 +2,7 @@
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
 Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
-Version: 0.4.200417
+Version: 0.4.200617
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later
@@ -56,7 +56,7 @@ element {
     margin-bottom: 75%; /* 4:3 aspect ratio */
 }
 .aspect-ratio.ar-16-9 .dummy {
-    margin-bottom: 56.25%%; /* 16:9; aspect ratio */
+    margin-bottom: 56.25%; /* 16:9; aspect ratio */
 }
 .aspect-ratio.ar-3-4 .dummy {
     margin-bottom: 125%; /* 3:4; aspect ratio */
