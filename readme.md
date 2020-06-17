@@ -1,13 +1,13 @@
 # === VI: Include Post By ===
-Contributors: Knighthawk
-Tags: shortcode, vars, options, post, params, include
-Requires at least: 4.0
-Requires PHP: 5.2.4
-Tested up to: 5.4
-Version: 0.4.200611
-Stable tag: trunk
-License: GPLv2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Contributors: Knighthawk<br>
+Tags: shortcode, vars, options, post, params, include<br>
+Requires at least: 4.0<br>
+Requires PHP: 5.2.4<br>
+Tested up to: 5.4<br>
+Version: 0.4.200611<br>
+Stable tag: trunk<br>
+License: GPLv2<br>
+License URI: http://www.gnu.org/licenses/gpl-2.0.html<br>
 
 Shortcodes allowing you to display posts inside other posts/pages
 
@@ -17,10 +17,10 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 
 ## == Coming Soon ==
 
-More display options.
-Taxonomy and post type agnostic
-setable default thumbnail
-grab the actual small thumbnail image for srcset
+More display options.<br>
+Taxonomy and post type agnostic<br>
+setable default thumbnail<br>
+grab the actual small thumbnail image for srcset<br>
 
 
 ## == Instructions ==
@@ -51,10 +51,10 @@ Shortcode for including a single post by its ID
 * class[x] = a custom class name that will be added to each container element
 
 
-Shortcode for including single/multiple posts by their category.
-Every option required or used in the include-post-by-id will also pass through here.
-This function will query the DB and then call include-post-by-id once for each resulting post.
-Shown here are only the options which are unique to this function.
+Shortcode for including single/multiple posts by their category.<br>
+Every option required or used in the include-post-by-id will also pass through here.<br>
+This function will query the DB and then call include-post-by-id once for each resulting post.<br>
+Shown here are only the options which are unique to this function.<br>
 
     [include-post-by-cat
      cat="123"
