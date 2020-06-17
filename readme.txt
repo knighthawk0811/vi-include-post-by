@@ -4,7 +4,7 @@ Tags: shortcode, vars, options, post, params, include
 Requires at least: 4.0
 Requires PHP: 5.2.4
 Tested up to: 5.4
-Version: 0.4.200520
+Version: 0.4.200611
 Stable tag: trunk
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,10 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 
 ## == Coming Soon ==
 
-More display options. Bootstrap Cards option. Custom class names with a header/body/footer element.
+More display options.
+Taxonomy and post type agnostic
+setable default thumbnail
+grab the actual small thumbnail image for srcset
 
 
 ## == Instructions ==
@@ -32,6 +35,7 @@ Shortcode for including a single post by its ID
      display_header="title,meta,thumbnail,content,excerpt,more,footer,all"
      display_body="title,meta,thumbnail,content,excerpt,more,footer,all"
      display_footer="title,meta,thumbnail,content,excerpt,more,footer,all"
+     image_size="thumbnail,medium,large,full,custom-image-size"
      class_inner="custom-class-name"
      class_header="custom-class-name"
      class_body="custom-class-name"
@@ -47,7 +51,7 @@ Shortcode for including a single post by its ID
 * class[x] = a custom class name that will be added to each container element
 
 
-Shortcode for including single/multiple posts by their category
+Shortcode for including single/multiple posts by their category.
 Every option required or used in the include-post-by-id will also pass through here.
 This function will query the DB and then call include-post-by-id once for each resulting post.
 Shown here are only the options which are unique to this function.
@@ -72,6 +76,9 @@ Shown here are only the options which are unique to this function.
 
 
 ## == Changelog ==
+
+*0.4.200611*
+* added: support for a choice in thumbnail size
 
 *0.4.200520*
 * Update: display and class

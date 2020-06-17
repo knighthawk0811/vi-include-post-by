@@ -62,16 +62,18 @@ class vi_include_post_by
 	/**
 	 * return the thumbnail URL as a string
 	 *
-	 * @version 0.3.200415
+	 * @version 0.4.200611
 	 * @since 0.1.181213
 	 * @todo custom ID is not returning the post properly for some reason.
 	 *		result is going to the current page/post after returning.
 	 *		following procedures then have the wrong post data
 	 */
-	private static function get_thumbnail_url($input_post = null)
+	private static function get_thumbnail_url($input_post = null, $image_size = 'full')
 	{
 		//return value
 		$the_post_thumbnail_url = '';
+		$image_size = sanitize_text_field($image_size);
+		$working_post = $input_post;
 
 		if($input_post == null)
 		{
@@ -90,40 +92,16 @@ class vi_include_post_by
 				{
 					//setup post
 					$query2->the_post();
-					//is this a proper post type?
-					if( 'post' === get_post_type($query2->post) || 'page' === get_post_type($query2->post) )
-					{
-						//already have a thumbnail? use that one
-						//if(has_post_thumbnail($query2->post->ID))
-						if( get_the_post_thumbnail($query2->post->ID) != '' )
-						{
-							ob_start();
-							the_post_thumbnail_url('full');
-							$the_post_thumbnail_url = ob_get_contents();
-							ob_end_clean();
-						}
-						else
-						{
-							//no thumbnail set, then grab the first image
-							ob_start();
-							ob_end_clean();
-							$matches = array();
-							$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $query2->post->post_content, $matches);
-							$the_post_thumbnail_url = $matches[1][0];
 
-							//set a default image inside the theme folder
-							if(empty($the_post_thumbnail_url))
-							{
-								$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
-							}
-						}
-					}
+					$working_post = $query2->post;
+
 				}
 				// Restore original Post Data
 				wp_reset_postdata();
 			}
 		}
-		elseif( is_object($input_post) )
+
+		if( is_object($working_post) )
 		{
 			//is this a proper post type?
 			if( 'post' === get_post_type($input_post) || 'page' === get_post_type($input_post) )
@@ -132,9 +110,98 @@ class vi_include_post_by
 				if( get_the_post_thumbnail($input_post->ID) != '' )
 				{
 					ob_start();
-					the_post_thumbnail_url('full');
+					the_post_thumbnail_url($image_size);
 					$the_post_thumbnail_url = ob_get_contents();
 					ob_end_clean();
+				}
+				else
+				{
+					//no thumbnail set, then grab the first image
+					ob_start();
+					ob_end_clean();
+					$matches = array();
+					$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $input_post->post_content, $matches);
+					$the_post_thumbnail_url = $matches[1][0];
+
+					//echo('<pre style="display:none">' . site_var_dump_return($input_post) . '</pre>');
+
+					//set a default image inside the theme folder
+					if(empty($the_post_thumbnail_url))
+					{
+						$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
+					}
+				}
+			}
+		}
+
+		return $the_post_thumbnail_url;
+	}
+
+
+	/**
+	 * return the thumbnail URL of all sizes as a string
+	 * NOTE: works, but image-set is not supported yet
+	 *
+	 * @version 0.4.200611
+	 * @since 0.4.200611
+	 * @todo
+	 */
+	private static function get_thumbnail_image_set($input_post = null)
+	{
+		//return value
+		$the_post_thumbnail_url = '';
+		$working_post = $input_post;
+
+		if($input_post == null)
+		{
+			//fail gracefully
+		}
+		elseif( is_int($input_post) )
+		{
+			//need to lookup post
+
+			//new loop
+			$query2 = new WP_Query( array( 'p' => $input_post ) );
+			if ( $query2->have_posts() )
+			{
+				// The 2nd Loop
+				while ( $query2->have_posts() )
+				{
+					//setup post
+					$query2->the_post();
+
+					$working_post = $query2->post;
+
+				}
+				// Restore original Post Data
+				wp_reset_postdata();
+			}
+		}
+
+		if( is_object($working_post) )
+		{
+			//is this a proper post type?
+			if( 'post' === get_post_type($input_post) || 'page' === get_post_type($input_post) )
+			{
+				//already have a thumbnail? use that one
+				if( get_the_post_thumbnail($input_post->ID) != '' )
+				{
+					ob_start();
+					the_post_thumbnail_url("thumbnail");
+					$the_post_thumbnail_url .= 'url(' . ob_get_contents(). ') ' . intval( get_option( "thumbnail_size_w" ) ) . 'px, ';
+					ob_end_clean();
+
+					ob_start();
+					the_post_thumbnail_url("medium");
+					$the_post_thumbnail_url .= 'url('  . ob_get_contents(). ') ' . intval( get_option( "medium_size_w" ) ) . 'px, ';
+					ob_end_clean();
+
+					ob_start();
+					the_post_thumbnail_url("full");
+					$the_post_thumbnail_url .= 'url('  . ob_get_contents(). ') ' . intval( get_option( "large_size_w" ) ) . 'px';
+					ob_end_clean();
+
+
 				}
 				else
 				{
@@ -174,17 +241,17 @@ class vi_include_post_by
 	/**
 	 * return the full thumbnail content
 	 *
-	 * @version 0.3.200415
+	 * @version 0.4.200611
 	 * @since 0.3.191007
 	 */
-	private static function get_thumbnail($post = NULL, $link = true, $class = '')
+	private static function get_thumbnail($post = NULL, $link = true, $class = '', $image_size = 'full')
 	{
         if( $link )
         {
             echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
             echo( '<div class="dummy"></div>' );
             echo( '<a href="' . esc_url( get_permalink() ) . '" >' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ');"></div>' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '); "></div>' );
             echo( '</a>' );
             echo( '</div>' );
         }
@@ -192,11 +259,9 @@ class vi_include_post_by
         {
             echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
             echo( '<div class="dummy"></div>' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post) . ');"></div>' );
+            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '); "></div>' );
             echo( '</div>' );
         }
-        //gotta fix things after getting the thumbnail
-    	//$the_posts->reset_postdata();//setup the current post
     }
 
 	/**
@@ -399,6 +464,7 @@ class vi_include_post_by
 	    	'display_header' => '',
 	    	'display_body' => '',
 	    	'display_footer' => '',
+	    	'image_size' => 'full',
 	    	'card' => false,
 	    	'class' => '',
 	    	'class_inner' => '',
@@ -425,6 +491,8 @@ class vi_include_post_by
 
 	    $display_footer = sanitize_text_field( $display_footer );
 	    $display_footer_option_input = explode(',', str_replace(' ', '', $display_footer));
+
+	    $image_size = sanitize_text_field( $image_size );
 
 	    $class = sanitize_text_field( $class );
 	    $class_inner = sanitize_text_field( $class_inner );
@@ -493,7 +561,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -511,7 +579,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
@@ -539,7 +607,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -557,7 +625,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
@@ -585,7 +653,7 @@ class vi_include_post_by
 					                vi_include_post_by::get_meta();
 					                break;
 					            case 'thumbnail':
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
 					                vi_include_post_by::get_content();
@@ -603,7 +671,7 @@ class vi_include_post_by
 					            	//default ordering
 					                vi_include_post_by::get_title($link);
 					                vi_include_post_by::get_meta();
-					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail);
+					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                vi_include_post_by::get_content();
 					                vi_include_post_by::get_footer();
 					                break;
