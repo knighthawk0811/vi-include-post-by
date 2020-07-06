@@ -3,7 +3,7 @@
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
 Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
-Version: 0.4.200617
+Version: 0.4.200706
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later
@@ -51,7 +51,9 @@ class vi_include_post_by
 	 */
 	public static function enqueue_scripts() {
 	    //style for the plugin
-	    wp_enqueue_style( 'vi-include-post-by', plugins_url( '/style.css', __FILE__ ), NULL , NULL , 'all' );
+	    wp_enqueue_style( 'vi-ipb-css', plugins_url( '/style.css', __FILE__ ), NULL , NULL , 'all' );
+
+	    wp_enqueue_script( 'vi-ipb-js', plugins_url( '/common.js', __FILE__ ), array('jquery') , NULL , true );
 	}
 
 
@@ -241,27 +243,16 @@ class vi_include_post_by
 	/**
 	 * return the full thumbnail content
 	 *
-	 * @version 0.4.200611
+	 * @version 0.4.200706
 	 * @since 0.3.191007
 	 */
 	private static function get_thumbnail($post = NULL, $link = true, $class = '', $image_size = 'full')
 	{
-        if( $link )
-        {
-            echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
-            echo( '<div class="dummy"></div>' );
-            echo( '<a href="' . esc_url( get_permalink() ) . '" >' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '); "></div>' );
-            echo( '</a>' );
-            echo( '</div>' );
-        }
-        else
-        {
-            echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
-            echo( '<div class="dummy"></div>' );
-            echo( '<div class="element" style="background-image:url(' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '); "></div>' );
-            echo( '</div>' );
-        }
+        echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
+        if( $link ){ echo( '<a href="' . esc_url( get_permalink() ) . '" >' ); }
+        echo( '<img class="element" src="' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '" alt="thumbnail" />' );
+        if( $link ){ echo( '</a>' ); }
+        echo( '</div>' );
     }
 
 	/**

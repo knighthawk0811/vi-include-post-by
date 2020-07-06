@@ -2,7 +2,7 @@
 Plugin Name: VI: Include Post By
 Plugin URI: http://neathawk.com
 Description: Ability to include posts inside other posts/pages, etc, with a shortcode.
-Version: 0.4.200617
+Version: 0.4.200706
 Author: Joseph Neathawk
 Author URI: http://Neathawk.com
 License: GNU General Public License v2 or later
@@ -41,37 +41,43 @@ element {
 # Thumbnail
 --------------------------------------------------------------*/
 
-/* forced aspect ratios */
+/* forced aspect ratios 2.0 */
 .aspect-ratio {
     display: inline-block;
+    height:0px;
+    margin:0;
+    padding:0 0 100% 0;
     position: relative;
     width: 100%;
-}
-.aspect-ratio .dummy,
-.aspect-ratio.ar-1-1 .dummy {
-	/*default aspect ratio */
-    margin-bottom: 100%; /* 1:1; aspect ratio */
-}
-.aspect-ratio.ar-4-3 .dummy {
-    margin-bottom: 75%; /* 4:3 aspect ratio */
-}
-.aspect-ratio.ar-16-9 .dummy {
-    margin-bottom: 56.25%; /* 16:9; aspect ratio */
-}
-.aspect-ratio.ar-3-4 .dummy {
-    margin-bottom: 125%; /* 3:4; aspect ratio */
-}
-.aspect-ratio.ar-9-16 .dummy {
-    margin-bottom: 177.7%; /* 9:16; aspect ratio */
-}
-.aspect-ratio .element {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
 
+    background-color:#cccccc;
     background-size:cover;
     background-position:center center;
+}
+.aspect-ratio.ar-1-1 {
+    /*default aspect ratio */
+    padding-bottom: 100%; /* 1:1; aspect ratio */
+}
+.aspect-ratio.ar-4-3 {
+    padding-bottom: 75%; /* 4:3 aspect ratio */
+}
+.aspect-ratio.ar-16-9 {
+    padding-bottom: 56.25%; /* 16:9; aspect ratio */
+}
+.aspect-ratio.ar-3-4 {
+    padding-bottom: 125%; /* 3:4; aspect ratio */
+}
+.aspect-ratio.ar-9-16 {
+    padding-bottom: 177.7%; /* 9:16; aspect ratio */
+}
+.aspect-ratio * {
+    /*edit all children */
+    bottom:0px;
+    height:100%;
+    left:0px;
+    position:absolute;
+    right:0px;
+    top:0px;
+    width:100%;
 }
 
