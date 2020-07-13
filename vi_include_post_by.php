@@ -73,7 +73,7 @@ class vi_include_post_by
 	private static function get_thumbnail_url($input_post = null, $image_size = 'full')
 	{
 		//return value
-		$the_post_thumbnail_url = '';
+		$the_post_thumbnail_url = plugins_url( '/default-image.png', __FILE__ );
 		$image_size = sanitize_text_field($image_size);
 		$working_post = $input_post;
 
@@ -109,14 +109,9 @@ class vi_include_post_by
 			if( 'post' === get_post_type($input_post) || 'page' === get_post_type($input_post) )
 			{
 				//already have a thumbnail? use that one
-				if( get_the_post_thumbnail($input_post->ID) != '' )
-				{
-					ob_start();
-					the_post_thumbnail_url($image_size);
-					$the_post_thumbnail_url = ob_get_contents();
-					ob_end_clean();
-				}
-				else
+
+				$the_post_thumbnail_url = get_the_post_thumbnail_url($input_post->ID, $image_size);
+				if( $the_post_thumbnail_url == false )
 				{
 					//no thumbnail set, then grab the first image
 					ob_start();
@@ -125,12 +120,10 @@ class vi_include_post_by
 					$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $input_post->post_content, $matches);
 					$the_post_thumbnail_url = $matches[1][0];
 
-					//echo('<pre style="display:none">' . site_var_dump_return($input_post) . '</pre>');
-
 					//set a default image inside the theme folder
 					if(empty($the_post_thumbnail_url))
 					{
-						$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
+						$the_post_thumbnail_url = plugins_url( '/default-image.png', __FILE__ );
 					}
 				}
 			}
@@ -151,7 +144,7 @@ class vi_include_post_by
 	private static function get_thumbnail_image_set($input_post = null)
 	{
 		//return value
-		$the_post_thumbnail_url = '';
+		$the_post_thumbnail_url = plugins_url( '/default-image.png', __FILE__ );
 		$working_post = $input_post;
 
 		if($input_post == null)
@@ -186,23 +179,11 @@ class vi_include_post_by
 			if( 'post' === get_post_type($input_post) || 'page' === get_post_type($input_post) )
 			{
 				//already have a thumbnail? use that one
-				if( get_the_post_thumbnail($input_post->ID) != '' )
+				if( get_the_post_thumbnail_url($input_post->ID) != false )
 				{
-					ob_start();
-					the_post_thumbnail_url("thumbnail");
-					$the_post_thumbnail_url .= 'url(' . ob_get_contents(). ') ' . intval( get_option( "thumbnail_size_w" ) ) . 'px, ';
-					ob_end_clean();
-
-					ob_start();
-					the_post_thumbnail_url("medium");
-					$the_post_thumbnail_url .= 'url('  . ob_get_contents(). ') ' . intval( get_option( "medium_size_w" ) ) . 'px, ';
-					ob_end_clean();
-
-					ob_start();
-					the_post_thumbnail_url("full");
-					$the_post_thumbnail_url .= 'url('  . ob_get_contents(). ') ' . intval( get_option( "large_size_w" ) ) . 'px';
-					ob_end_clean();
-
+					$the_post_thumbnail_url = 'url(' . get_the_post_thumbnail_url($input_post->ID, 'thumbnail') . ') ' . intval( get_option( "thumbnail_size_w" ) ) . 'px, ';
+					$the_post_thumbnail_url .= 'url(' . get_the_post_thumbnail_url($input_post->ID, 'medium') . ') ' . intval( get_option( "medium_size_w" ) ) . 'px, ';
+					$the_post_thumbnail_url .= 'url(' . get_the_post_thumbnail_url($input_post->ID, 'full') . ') ' . intval( get_option( "large_size_w" ) ) . 'px';
 
 				}
 				else
@@ -212,14 +193,12 @@ class vi_include_post_by
 					ob_end_clean();
 					$matches = array();
 					$output = preg_match_all('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $input_post->post_content, $matches);
-					$the_post_thumbnail_url = $matches[1][0];
-
-					//echo('<pre style="display:none">' . site_var_dump_return($input_post) . '</pre>');
+					$the_post_thumbnail_url = 'url(' . $matches[1][0] . ') ' . intval( get_option( "medium_size_w" ) ) . 'px, ';
 
 					//set a default image inside the theme folder
 					if(empty($the_post_thumbnail_url))
 					{
-						$the_post_thumbnail_url = get_stylesheet_directory_uri() ."/image/default_thumbnail.png";
+						$the_post_thumbnail_url = 'url(' . plugins_url( '/default-image.png', __FILE__ ) . ') ' . intval( get_option( "medium_size_w" ) ) . 'px, ';
 					}
 				}
 			}
@@ -248,9 +227,10 @@ class vi_include_post_by
 	 */
 	private static function get_thumbnail($post = NULL, $link = true, $class = '', $image_size = 'full')
 	{
+		if($error_report){echo('<pre>[ipb] thumbnail' . "\n" . var_dump_return( $post ) . '</pre>');}
         echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
-        if( $link ){ echo( '<a href="' . esc_url( get_permalink() ) . '" >' ); }
-        echo( '<img class="element" src="' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '" alt="thumbnail" />' );
+        if( $link ){ echo( '<a href="' . esc_url( get_permalink($post) ) . '" >' ); }
+        echo( '<img class="element" src="' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '" alt="thumbnail for ' . $post->post_title . '" />' );
         if( $link ){ echo( '</a>' ); }
         echo( '</div>' );
     }
@@ -261,15 +241,15 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_title($link = true)
+	private static function get_title($post = NULL, $link = true)
 	{
 		if( $link )
 		{
-			the_title( '<h2 class="entry-title"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h2>' );
+			echo( '<h2 class="entry-title"><a href="' . esc_url( get_permalink($post) ) . '" rel="bookmark">' . get_the_title($post) . '</a></h2>' );
 		}
 		else
 		{
-			the_title( '<h2 class="entry-title">', '</h2>' );
+			echo( '<h2 class="entry-title">' . get_the_title($post) . '</h2>' );
 		}
 	}
 
@@ -280,24 +260,25 @@ class vi_include_post_by
 	 * @version 0.1.181213
 	 * @since 0.1.181213
 	 */
-	private static function posted_on()
+	private static function posted_on($post = NULL)
 	{
 		$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
-		if ( get_the_time( 'U' ) !== get_the_modified_time( 'U' ) ) {
+		if ( get_the_time( 'U', $post ) !== get_the_modified_time( 'U', $post ) ) {
 			$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
 		}
+		$date_format = get_option('date_format', 'c');
 
 		$time_string = sprintf( $time_string,
-			esc_attr( get_the_date( 'c' ) ),
-			esc_html( get_the_date() ),
-			esc_attr( get_the_modified_date( 'c' ) ),
-			esc_html( get_the_modified_date() )
+			esc_attr( get_the_date( 'c', $post ) ),
+			esc_html( get_the_date( $date_format, $post ) ),
+			esc_attr( get_the_modified_date( 'c', $post ) ),
+			esc_html( get_the_modified_date( $date_format, $post ) ),
 		);
 
 		$posted_on = sprintf(
 			/* translators: %s: post date. */
 			esc_html_x( 'Posted on %s', 'post date', 'vi_include_post_by' ),
-			'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
+			'<a href="' . esc_url( get_permalink($post) ) . '" rel="bookmark">' . $time_string . '</a>'
 		);
 
 		echo '<span class="posted-on">' . $posted_on . '</span>'; // WPCS: XSS OK.
@@ -310,12 +291,14 @@ class vi_include_post_by
 	 * @version 0.1.181213
 	 * @since 0.1.181213
 	 */
-	private static function posted_by()
+	private static function posted_by($post = NULL)
 	{
+		$author_id = $post->post_author;
+
 		$byline = sprintf(
 			/* translators: %s: post author. */
 			esc_html_x( 'by %s', 'post author', 'vi_include_post_by' ),
-			'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>'
+			'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( $author_id ) ) . '">' . esc_html( get_the_author_meta('display_name', $author_id) ) . '</a></span>'
 		);
 
 		echo '<span class="byline"> ' . $byline . '</span>'; // WPCS: XSS OK.
@@ -327,11 +310,11 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_meta()
+	private static function get_meta($post = NULL)
 	{
         echo( '<div class="entry-meta">' );
-        vi_include_post_by::posted_on();
-        vi_include_post_by::posted_by();
+        vi_include_post_by::posted_on($post);
+        vi_include_post_by::posted_by($post);
         echo( '</div>' );
 	}
 
@@ -341,10 +324,10 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_content()
+	private static function get_content($post = NULL)
 	{
         echo( '<div class="entry-content">' );
-        the_content();
+        echo( do_shortcode( get_the_content('', false, $post) ) );
         echo( '</div>' );
 	}
 
@@ -354,10 +337,10 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_excerpt()
+	private static function get_excerpt($post = NULL)
 	{
         echo( '<div class="entry-content">' );
-        the_excerpt();
+        echo( get_the_excerpt($post) );
         echo( '</div>' );
 	}
 
@@ -367,9 +350,9 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_more($more_text = "Continue Reading")
+	private static function get_more($post = NULL, $more_text = "Continue Reading")
 	{
-        echo( '<a class="read-more" href="' . esc_url( get_permalink() ) . '">' . $more_text . '</a>' );
+        echo( '<a class="read-more" href="' . esc_url( get_permalink($post) ) . '">' . $more_text . '</a>' );
 	}
 
 	/**
@@ -378,11 +361,11 @@ class vi_include_post_by
 	 * @version 0.1.181213
 	 * @since 0.1.181213
 	 */
-	private static function category_list()
+	private static function category_list($post = NULL)
 	{
-		if ( 'post' === get_post_type() ) {
+		if ( 'post' === get_post_type($post) ) {
 			/* translators: used between list items, there is a space after the comma */
-			$categories_list = get_the_category_list( esc_html__( ', ', 'vi_include_post_by' ) );
+			$categories_list = get_the_category_list( esc_html__( ', ', 'vi_include_post_by' ), '', $post->ID );
 			if ( $categories_list ) {
 				/* translators: 1: list of categories. */
 				printf( '<span class="cat-links">' . esc_html__( 'Posted in %1$s', 'vi_include_post_by' ) . '</span>', $categories_list ); // WPCS: XSS OK.
@@ -396,10 +379,10 @@ class vi_include_post_by
 	 * @version 0.3.191007
 	 * @since 0.3.191007
 	 */
-	private static function get_footer()
+	private static function get_footer($post = NULL)
 	{
         echo( '<div class="entry-footer">' );
-        vi_include_post_by::category_list();
+        vi_include_post_by::category_list($post);
         echo( '</div>' );
 	}
 
@@ -421,7 +404,7 @@ class vi_include_post_by
         {
             $style .= ' border:1px solid rgba(0,0,0,0); ';
         }
-        return '<a style="' . $style . '" href="' . esc_url(get_permalink()) . '?pn=' . $number . '" title="Page ' . $number . '">' . $number . '</a>';
+        return '<a style="' . $style . '" href="' . esc_url(get_permalink($post)) . '?pn=' . $number . '" title="Page ' . $number . '">' . $number . '</a>';
 	}
 
 
@@ -469,7 +452,9 @@ class vi_include_post_by
 
 
 	    if ( $error_report === 'true' ) $error_report = true;
-	    if($error_report){$output .= '*** error reporting enabled <br>';}
+	    if($error_report){$output .= '*** [ipb-id] error reporting enabled <br>';}
+
+		if($error_report){$output .= '<pre>[ipb-id] ' . "\n" . var_dump_return( $attr ) . '</pre>';}
 
 	    //remove spaces, and build array
 
@@ -508,7 +493,7 @@ class vi_include_post_by
 	    }
 
 
-	    if($error_report){$output .= '*** sanitization complete <br>';}
+	    if($error_report){$output .= '*** [ipb-id] sanitization complete <br>';}
 
 
 	    //get started, query the post, start a new loop
@@ -539,44 +524,46 @@ class vi_include_post_by
         			//HEADER
         			if(!empty($display_header))
         			{
+						if($error_report){$output .= '<pre>[ipb-id] header' . "\n" . var_dump_return( $the_posts->post->ID ) . '</pre>';}
+						if($error_report){$output .= '<pre>[ipb-id] header' . "\n" . var_dump_return( $display_header_option_input ) . '</pre>';}
 	        			echo( '<div class="header ' . $class_header . '">' );
 					    foreach( $display_header_option_input as $key => &$value )
 					    {
 					        switch( $value )
 					        {
 					            case 'title':
-					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_title($the_posts->post, $link);
 					                break;
 					            case 'meta':
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
-					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_content($the_posts->post);
 					                break;
 					            case 'excerpt':
-					                vi_include_post_by::get_excerpt();
+					                vi_include_post_by::get_excerpt($the_posts->post);
 					                break;
 					            case 'more':
-					                vi_include_post_by::get_more($more_text);
+					                vi_include_post_by::get_more($the_posts->post, $more_text);
 					                break;
 					            case 'footer':
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            case 'all':
 					            	//default ordering
-					                vi_include_post_by::get_title($link);
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_title($the_posts->post, $link);
+					                vi_include_post_by::get_meta($the_posts->post);
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
-					                vi_include_post_by::get_content();
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_content($the_posts->post);
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            default:
 					                //any other values are garbage in
 					                $value = null;
-					                unset($display_option_input[$key]);
+					                unset($display_header_option_input[$key]);
 					        }
 					    }
 	        			echo( '</div>' );//HEADER
@@ -585,44 +572,46 @@ class vi_include_post_by
         			//BODY
         			if(!empty($display_body))
         			{
+						if($error_report){$output .= '<pre>[ipb-id] body' . "\n" . var_dump_return( $the_posts->post->ID ) . '</pre>';}
+						if($error_report){$output .= '<pre>[ipb-id] body' . "\n" . var_dump_return( $display_body_option_input ) . '</pre>';}
 	        			echo( '<div class="body ' . $class_body. '">' );
 					    foreach( $display_body_option_input as $key => &$value )
 					    {
 					        switch( $value )
 					        {
 					            case 'title':
-					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_title($the_posts->post, $link);
 					                break;
 					            case 'meta':
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
-					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_content($the_posts->post);
 					                break;
 					            case 'excerpt':
-					                vi_include_post_by::get_excerpt();
+					                vi_include_post_by::get_excerpt($the_posts->post);
 					                break;
 					            case 'more':
-					                vi_include_post_by::get_more($more_text);
+					                vi_include_post_by::get_more($the_posts->post, $more_text);
 					                break;
 					            case 'footer':
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            case 'all':
 					            	//default ordering
-					                vi_include_post_by::get_title($link);
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_title($the_posts->post, $link);
+					                vi_include_post_by::get_meta($the_posts->post);
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
-					                vi_include_post_by::get_content();
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_content($the_posts->post);
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            default:
 					                //any other values are garbage in
-					                $value = null;
-					                unset($display_option_input[$key]);
+					                //$value = null;
+					                //unset($display_body_option_input[$key]);
 					        }
 					    }
 	        			echo( '</div>' );//BODY
@@ -631,55 +620,52 @@ class vi_include_post_by
         			//FOOTER
         			if(!empty($display_footer))
         			{
+						if($error_report){$output .= '<pre>[ipb-id] footer' . "\n" . var_dump_return( $the_posts->post->ID ) . '</pre>';}
+						if($error_report){$output .= '<pre>[ipb-id] footer' . "\n" . var_dump_return( $display_footer_option_input ) . '</pre>';}
 	        			echo( '<div class="footer ' . $class_footer . '">' );
 					    foreach( $display_footer_option_input as $key => &$value )
 					    {
 					        switch( $value )
 					        {
 					            case 'title':
-					                vi_include_post_by::get_title($link);
+					                vi_include_post_by::get_title($the_posts->post, $link);
 					                break;
 					            case 'meta':
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
 					            case 'content':
-					                vi_include_post_by::get_content();
+					                vi_include_post_by::get_content($the_posts->post);
 					                break;
 					            case 'excerpt':
-					                vi_include_post_by::get_excerpt();
+					                vi_include_post_by::get_excerpt($the_posts->post);
 					                break;
 					            case 'more':
-					                vi_include_post_by::get_more($more_text);
+					                vi_include_post_by::get_more($the_posts->post, $more_text);
 					                break;
 					            case 'footer':
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            case 'all':
 					            	//default ordering
-					                vi_include_post_by::get_title($link);
-					                vi_include_post_by::get_meta();
+					                vi_include_post_by::get_title($the_posts->post, $link);
+					                vi_include_post_by::get_meta($the_posts->post);
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
-					                vi_include_post_by::get_content();
-					                vi_include_post_by::get_footer();
+					                vi_include_post_by::get_content($the_posts->post);
+					                vi_include_post_by::get_footer($the_posts->post);
 					                break;
 					            default:
 					                //any other values are garbage in
 					                $value = null;
-					                unset($display_option_input[$key]);
+					                unset($display_footer_option_input[$key]);
 					        }
 					    }
 	        			echo( '</div>' );//FOOTER
 	        		}
 
-
-
         			echo( '</div>' );//include-post-by
-
-					if($error_report){$output .= '<pre>' . var_dump_return( $display_option_input ) . '</pre>';}
-
 
 	                /***********************
 	                output build complete
@@ -689,7 +675,7 @@ class vi_include_post_by
 	        }
 
 	        //obstream to $output
-	        $output = ob_get_contents();
+	        $output .= ob_get_contents();
 	        ob_end_clean();
 	    }
 
@@ -727,7 +713,7 @@ class vi_include_post_by
 	    	'perpage' => -1,
 	    	'offset' => 0,
 	    	'class_container' => '',
-	    	'parent_id' => '',
+	    	'id_container' => '',
 	    	'moretext' => 'Continue Reading',
 	    	'error_report' => false
 	    ), $attr );
@@ -736,7 +722,9 @@ class vi_include_post_by
 
 
 	    if ( $error_report === 'true' ) $error_report = true;
-	    if($error_report){$output .= '*** error reporting enabled <br>';}
+	    if($error_report){$output .= '*** [ipb-cat] error reporting enabled <br>';}
+
+		if($error_report){$output .= '<pre>[ipb-cat] ' . "\n"  . var_dump_return( $attr ) . '</pre>';}
 
 
 	    if ( !is_null( $cat ) && ( is_numeric( $cat ) || preg_match( '/^[0-9,]+$/', $cat ) ) && !is_feed() )
@@ -788,10 +776,10 @@ class vi_include_post_by
 	        $offset += $offset_by_page;
 
 	    	$class_container = sanitize_text_field( $class_container );
-	    	$parent_id = sanitize_text_field( $parent_id );
+	    	$id_container = sanitize_text_field( $id_container );
 
 
-	    	if($error_report){$output .= '*** sanitization complete <br>';}
+	    	if($error_report){$output .= '*** [ipb-cat] sanitization complete <br>';}
 
 	        //get all posts
 	        $post_array = array();
@@ -815,10 +803,10 @@ class vi_include_post_by
 	        $post_array = array_slice( $post_array, $offset, null, true);
 
 
-	    	if($error_report){$output .= '*** content gathered, transient id = ' . $transient_name . '<br>';}
+	    	if($error_report){$output .= '*** [ipb-cat] content gathered, transient id = ' . $transient_name . '<br>';}
 
 	        //display content
-        	$output .= '<div id="' . $parent_id .'" class="include-post-by-container ' . get_category( $cat )->slug . ' ' . $class_container . '">';
+        	$output .= '<div id="' . $id_container .'" class="include-post-by-container ' . get_category( $cat )->slug . ' ' . $class_container . '">';
 	        if(is_array( $post_array ) && count( $post_array ) > 0)
 	        {
 
@@ -836,13 +824,13 @@ class vi_include_post_by
 		            $attr['first_item'] = $first_item;
 		            $first_item = false;
 
-		            if($error_report){$output .= '<pre>' . var_dump_return( $item ) . '</pre>';}
+		            if($error_report){$output .= '<pre>[ipb-cat] ' . "\n"   . var_dump_return( $item ) . '</pre>';}
 
 	                $output .= vi_include_post_by::include_post_by_id( $attr );
 	            }
 
 
-	    		if($error_report){$output .= '*** content complete, begin paginate <br>';}
+	    		if($error_report){$output .= '*** [ipb-cat] content complete, begin paginate <br>';}
 
 				//pagination
 	            if( $paginate )
@@ -922,8 +910,8 @@ class vi_include_post_by
 	        //do nothing
 	    }
 
-
-		if($error_report){$output .= '<pre>' . var_dump_return( $post_array ) . '</pre>';}
+	    // a bit redundanta and lengthy
+		//if($error_report){$output .= '<pre>' . var_dump_return( $post_array ) . '</pre>';}
 
 	    return $output;
 	}
