@@ -46,6 +46,7 @@ element {
     display: inline-block;
     height:0px;
     margin:0;
+    max-width:100%;
     padding:0 0 100% 0;
     position: relative;
     width: 100%;
@@ -64,14 +65,20 @@ element {
 .aspect-ratio.ar-16-9 {
     padding-bottom: 56.25%; /* 16:9; aspect ratio */
 }
+.aspect-ratio.ar-21-9 {
+    padding-bottom: 42.857%; /* 21:9; aspect ratio */
+}
 .aspect-ratio.ar-3-4 {
     padding-bottom: 125%; /* 3:4; aspect ratio */
 }
 .aspect-ratio.ar-9-16 {
     padding-bottom: 177.7%; /* 9:16; aspect ratio */
 }
-.aspect-ratio * {
-    /*edit all children */
+.aspect-ratio.ar-9-21 {
+    padding-bottom: 233.33%; /* 9:21; aspect ratio */
+}
+.aspect-ratio > * {
+    /*edit all direct children */
     bottom:0px;
     height:100%;
     left:0px;

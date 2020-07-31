@@ -272,7 +272,7 @@ class vi_include_post_by
 			esc_attr( get_the_date( 'c', $post ) ),
 			esc_html( get_the_date( $date_format, $post ) ),
 			esc_attr( get_the_modified_date( 'c', $post ) ),
-			esc_html( get_the_modified_date( $date_format, $post ) ),
+			esc_html( get_the_modified_date( $date_format, $post ) )
 		);
 
 		$posted_on = sprintf(
