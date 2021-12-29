@@ -227,7 +227,7 @@ class vi_include_post_by
 	 */
 	private static function get_thumbnail($post = NULL, $link = true, $class = '', $image_size = 'full')
 	{
-		if($error_report){echo('<pre>[ipb] thumbnail' . "\n" . var_dump_return( $post ) . '</pre>');}
+		if($self->error_report){echo('<pre>[ipb] thumbnail' . "\n" . var_dump_return( $post ) . '</pre>');}
         echo( '<div class="post-thumbnail aspect-ratio ' . $class . '">' );
         if( $link ){ echo( '<a href="' . esc_url( get_permalink($post) ) . '" >' ); }
         echo( '<img class="element" src="' . vi_include_post_by::get_thumbnail_url($post, $image_size) . '" alt="thumbnail for ' . $post->post_title . '" />' );
@@ -537,6 +537,12 @@ class vi_include_post_by
 					            case 'meta':
 					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
+                                case 'posted-on':
+                                    vi_include_post_by::posted_on($the_posts->post);
+                                    break;
+                                case 'posted-by':
+                                    vi_include_post_by::posted_by($the_posts->post);
+                                    break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
@@ -585,6 +591,12 @@ class vi_include_post_by
 					            case 'meta':
 					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
+                                case 'posted-on':
+                                    vi_include_post_by::posted_on($the_posts->post);
+                                    break;
+                                case 'posted-by':
+                                    vi_include_post_by::posted_by($the_posts->post);
+                                    break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
@@ -633,6 +645,12 @@ class vi_include_post_by
 					            case 'meta':
 					                vi_include_post_by::get_meta($the_posts->post);
 					                break;
+                                case 'posted-on':
+                                    vi_include_post_by::posted_on($the_posts->post);
+                                    break;
+                                case 'posted-by':
+                                    vi_include_post_by::posted_by($the_posts->post);
+                                    break;
 					            case 'thumbnail':
 					                vi_include_post_by::get_thumbnail($the_posts->post, $link, $class_thumbnail, $image_size);
 					                break;
