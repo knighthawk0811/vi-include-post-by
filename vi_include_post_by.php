@@ -41,21 +41,6 @@ class vi_include_post_by
     /*--------------------------------------------------------------
     # Constructive Functions
     --------------------------------------------------------------*/
-	/**
-	 * ENQUEUE SCRIPTS AND STYLES
-	 *
-	 * wp_enqueue_style( string $handle, string $src = '', array $deps = array(), string|bool|null $ver = false, string $media = 'all' )
-	 * wp_enqueue_script( string $handle, string $src = '', array $deps = array(), string|bool|null $ver = false, bool $in_footer = false )
-	 *
-	 * @link https://developer.wordpress.org/themes/basics/including-css-javascript/#stylesheets
-	 */
-	public static function enqueue_scripts() {
-	    //style for the plugin
-	    wp_enqueue_style( 'vi-ipb-css', plugins_url( '/style.css', __FILE__ ), NULL , NULL , 'all' );
-
-	    wp_enqueue_script( 'vi-ipb-js', plugins_url( '/common.js', __FILE__ ), array('jquery') , NULL , true );
-	}
-
 
     /*--------------------------------------------------------------
     # Reusable Functions
@@ -937,7 +922,3 @@ class vi_include_post_by
 
 add_shortcode( 'include-post-by-id', Array(  'vi_include_post_by', 'include_post_by_id' ) );
 add_shortcode( 'include-post-by-cat', Array( 'vi_include_post_by', 'include_post_by_cat' ) );
-
-
-//enqueue scripts
-add_action( 'wp_enqueue_scripts', Array( 'vi_include_post_by', 'enqueue_scripts' ) );
