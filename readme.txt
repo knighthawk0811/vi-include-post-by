@@ -1,13 +1,13 @@
 # === VI: Include Post By ===
-Contributors: Knighthawk
-Tags: shortcode, vars, options, post, params, include
-Requires at least: 4.0
-Requires PHP: 5.2.4
-Tested up to: 5.4
-Version: 0.4.200706
-Stable tag: trunk
-License: GPLv2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Contributors: Knighthawk<br>
+Tags: shortcode, vars, options, post, params, include<br>
+Requires at least: 4.0<br>
+Requires PHP: 5.2.4<br>
+Tested up to: 5.4<br>
+Version: 0.4.230105<br>
+Stable tag: trunk<br>
+License: GPLv2<br>
+License URI: http://www.gnu.org/licenses/gpl-2.0.html<br>
 
 Shortcodes allowing you to display posts inside other posts/pages
 
@@ -17,10 +17,11 @@ VI: Include Post By - provides your pages and posts with shortcodes allowing you
 
 ## == Coming Soon ==
 
-More display options.
-Taxonomy and post type agnostic
-setable default thumbnail
-grab the actual small thumbnail image for srcset
+More display options.<br>
+Settings page with instructions and future settable options<br>
+Taxonomy and post type agnostic<br>
+Setable default thumbnail<br>
+Option to include the thumbnail **inside** the content for better floating, etc<br>
 
 
 ## == Instructions ==
@@ -31,11 +32,11 @@ Shortcode for including a single post by its ID
      link="true"
      moretext="Continue Reading"
      card="false"
-     display="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display="title,meta,thumbnail,content,excerpt,more,footer,**all**"
      display_header="title,meta,thumbnail,content,excerpt,more,footer,all"
-     display_body="title,meta,thumbnail,content,excerpt,more,footer,all"
+     display_body="title,meta,thumbnail,content,excerpt,more,footer,**all**"
      display_footer="title,meta,thumbnail,content,excerpt,more,footer,all"
-     image_size="thumbnail,medium,large,full,custom-image-size"
+     image_size="thumbnail,medium,large,**full**,custom-image-size"
      class_inner="custom-class-name"
      class_header="custom-class-name"
      class_body="custom-class-name"
@@ -51,10 +52,10 @@ Shortcode for including a single post by its ID
 * class[x] = a custom class name that will be added to each container element
 
 
-Shortcode for including single/multiple posts by their category.
-Every option required or used in the include-post-by-id will also pass through here.
-This function will query the DB and then call include-post-by-id once for each resulting post.
-Shown here are only the options which are unique to this function.
+Shortcode for including single/multiple posts by their category.<br>
+Every option required or used in the include-post-by-id will also pass through here.<br>
+This function will query the DB and then call include-post-by-id once for each resulting post.<br>
+Shown here are only the options which are unique to this function.<br>
 
     [include-post-by-cat
      cat="123"
@@ -77,8 +78,18 @@ Shown here are only the options which are unique to this function.
 
 ## == Changelog ==
 
+*0.4.230105*
+* update: remove ALl CSS and JS files and references
+* speed up page load by removing extra files
+* must style individually
+
+
 *0.4.200706*
 * update: aspect-ratio to use jQuery for simpler WP usage
+
+*0.4.200617*
+* fix: typos
+* fix: card outer class wasn't working properly
 
 *0.4.200611*
 * added: support for a choice in thumbnail size

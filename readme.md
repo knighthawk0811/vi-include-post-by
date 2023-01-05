@@ -4,7 +4,7 @@ Tags: shortcode, vars, options, post, params, include<br>
 Requires at least: 4.0<br>
 Requires PHP: 5.2.4<br>
 Tested up to: 5.4<br>
-Version: 0.4.200706<br>
+Version: 0.4.230105<br>
 Stable tag: trunk<br>
 License: GPLv2<br>
 License URI: http://www.gnu.org/licenses/gpl-2.0.html<br>
@@ -77,6 +77,12 @@ Shown here are only the options which are unique to this function.<br>
 
 
 ## == Changelog ==
+
+*0.4.230105*
+* update: remove ALl CSS and JS files and references
+* speed up page load by removing extra files
+* must style individually
+
 
 *0.4.200706*
 * update: aspect-ratio to use jQuery for simpler WP usage
